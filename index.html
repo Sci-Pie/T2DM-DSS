@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>T2D Injectable Therapy Recommender (Pyodide)</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="card">
+    <h1>T2D Injectable Therapy Recommender</h1>
+    <p class="muted">
+      Prototype clinical decision support. Not a prescription. Use local guidelines and clinical judgment.
+    </p>
+
+    <div class="grid">
+      <label>Country profile
+        <select id="country">
+          <option value="RU">RU</option>
+          <option value="TR">TR</option>
+          <option value="JO">JO</option>
+          <option value="IQ">IQ</option>
+          <option value="LB">LB</option>
+          <option value="EU">EU</option>
+          <option value="US">US</option>
+          <option value="OTHER">OTHER</option>
+        </select>
+      </label>
+
+      <label>HbA1c (%)
+        <input id="hba1c" type="number" step="0.1" placeholder="e.g., 9.2" value="9.0" />
+      </label>
+
+      <label>BMI
+        <input id="bmi" type="number" step="0.1" placeholder="e.g., 33.1" value="33.0" />
+      </label>
+
+      <label>eGFR (if CKD)
+        <input id="egfr" type="number" step="1" placeholder="e.g., 45" />
+      </label>
+    </div>
+
+    <div class="grid">
+      <label class="check"><input id="symptoms_catabolic" type="checkbox" /> Symptomatic hyperglycaemia / catabolic features (urgent insulin scenario)</label>
+      <label class="check"><input id="ascvd" type="checkbox" /> Established ASCVD</label>
+      <label class="check"><input id="hf" type="checkbox" /> Heart failure</label>
+      <label class="check"><input id="ckd" type="checkbox" /> Chronic kidney disease</label>
+
+      <label class="check"><input id="on_basal_insulin" type="checkbox" /> Already on basal insulin</label>
+      <label class="check"><input id="glp1_available" type="checkbox" checked /> GLP-1 RA available</label>
+      <label class="check"><input id="tirzepatide_available" type="checkbox" /> Dual GIP/GLP-1 available</label>
+      <label class="check"><input id="gi_contra_glp1" type="checkbox" /> GLP-1 intolerance/contraindication</label>
+    </div>
+
+    <button id="run">Generate recommendation</button>
+
+    <pre id="status" class="muted">Loading Pyodide…</pre>
+
+    <div id="result" class="result" hidden>
+      <h2>Output</h2>
+      <div><b>Recommendation:</b> <span id="therapy"></span></div>
+
+      <div class="spacer"></div>
+      <div><b>Rationale:</b></div>
+      <ul id="why"></ul>
+
+      <div class="spacer"></div>
+      <div><b>Next steps:</b></div>
+      <ul id="next"></ul>
+
+      <div class="spacer"></div>
+      <div><b>Guideline profile used:</b> <span id="profile"></span></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/pyodide@0.25.1/pyodide.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
