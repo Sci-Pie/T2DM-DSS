@@ -7,13 +7,30 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="styles.css" />
   <style>
-    .doc h1{margin:0 0 10px 0;font-size:20px}
-    .doc p,.doc li{color:#1a2233}
-    .doc code{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;}
-    .doc .nav{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-    .doc .nav a{font-size:13px;color:#1f3a8a;text-decoration:none;border:1px solid #e6eaf2;background:#fff;padding:8px 10px;border-radius:999px}
-    .doc .nav a:hover{filter:brightness(0.98)}
-    .mermaid{background:#fff;border:1px solid #e6eaf2;border-radius:14px;padding:12px;overflow:auto}
+    .doc h1 { margin: 0 0 10px 0; font-size: 20px; }
+    .doc p, .doc li { color: #1a2233; }
+    .doc code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; }
+
+    .nav { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+    .nav a {
+      font-size:13px; color: var(--accent); text-decoration:none;
+      border:1px solid var(--line); background:#fff; padding:8px 12px;
+      border-radius:999px; font-weight:600;
+    }
+    .nav a:hover { filter: brightness(0.98); }
+
+    .figure { border:1px solid var(--line); border-radius: var(--radius); background:#fff; padding:12px; overflow:auto; }
+    .figure img { width:100%; height:auto; display:block; }
+    .caption { margin-top:8px; font-size:12px; color: var(--muted); }
+
+    .doc h2 { margin-top: 16px; font-size: 16px; }
+    .doc h3 { margin-top: 14px; }
+    .doc p { font-size:14px; line-height:1.55; margin: 10px 0; }
+    .doc strong { color: var(--accent); }
+
+    .node { border-left: 3px solid rgba(31,58,138,.35); padding-left: 12px; margin: 12px 0; }
+    .version { display:flex; gap:10px; flex-wrap:wrap; margin-top: 8px; color: var(--muted); font-size: 12px; }
+    .pill { border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 10px; }
   </style>
 </head>
 
@@ -33,68 +50,125 @@
       <div class="nav">
         <a href="./index.html">Open tool</a>
         <a href="./algorithm.html">Algorithm</a>
-        <a href="./README.md">README (raw)</a>
       </div>
 
-      <h1>Clinical logic overview</h1>
+      <h1>Injectable therapy decision algorithm</h1>
+
       <p>
-        Country-adaptive injectable therapy decision support for adults with type 2 diabetes:
-        first injectable choice, intensification, and simplification (BB/premix → FRC iGlarLixi).
+        This page explains the decision logic used by the CDS prototype for adults with
+        <strong>type 2 diabetes (T2D)</strong>. The goal is transparency: the tool generates a recommendation
+        plus rationale and next steps.
       </p>
 
-      <h3>Country rules</h3>
-      <ul>
-        <li><b>Jordan (JO):</b> FRC (iGlarLixi) treated as not available.</li>
-        <li><b>Turkey (TR):</b> if FRC recommended and BMI &lt; 35, show comment: reimbursement often requires BMI ≥35 (comment only).</li>
-      </ul>
-
-      <h3>Decision tree</h3>
-
-      <div class="mermaid">
-flowchart TD
-  A[Start: Select country] --> B{Severe hyperglycaemia?<br/>Catabolic symptoms OR HbA1c ≥10}
-  B -- Yes --> I0[Insulin start / urgent insulin intensification]
-
-  B -- No --> S{On premix or basal-bolus<br/>AND hypoglycaemia/complexity?}
-  S -- Yes --> S1{FRC available?<br/>(and not Jordan)}
-  S1 -- Yes --> SFRC[Simplify: switch to FRC (iGlarLixi)]
-  S1 -- No --> SINS[Simplify within insulin options]
-
-  S -- No --> D{On basal insulin?}
-  D -- Yes --> D2{GLP-1 available?}
-  D2 -- Yes --> DBG[Add GLP-1 RA to basal]
-  D2 -- No --> D3{FRC available?<br/>(and not Jordan)}
-  D3 -- Yes --> DBF[Switch basal -> FRC]
-  D3 -- No --> DBP[Add prandial insulin<br/>(basal-plus -> escalate)]
-
-  D -- No --> E{Cardiorenal risk?<br/>ASCVD / HF / CKD}
-  E -- Yes --> E1{GLP-1 available?}
-  E1 -- Yes --> F1[First injectable: GLP-1 RA]
-  E1 -- No --> F2[First injectable: basal insulin]
-
-  E -- No --> W{BMI ≥ 30?}
-  W -- Yes --> W1{GLP-1 available?}
-  W1 -- Yes --> F1
-  W1 -- No --> H{HbA1c > 9<br/>and FRC available?<br/>(and not Jordan)}
-  W -- No --> H
-
-  H -- Yes --> F3[First injectable: FRC (iGlarLixi)]
-  H -- No --> Z{GLP-1 available?}
-  Z -- Yes --> F1
-  Z -- No --> F2
+      <div class="version">
+        <span class="pill"><strong>Algorithm version:</strong> v1 (MVP)</span>
+        <span class="pill"><strong>Scope:</strong> first injectable, intensification, simplification</span>
+        <span class="pill"><strong>Engine:</strong> <code>py/engine.py</code></span>
       </div>
 
-      <h3>Notes</h3>
-      <ul>
-        <li>This page is for transparency. The executable rules are in <code>py/engine.py</code>.</li>
-        <li>The tool is a prototype and does not replace clinical judgement or local labels.</li>
-      </ul>
+      <hr class="sep" />
+
+      <h2>Decision tree (diagram)</h2>
+
+      <div class="figure">
+        <img src="assets/decision-tree.png" alt="Decision tree: T2D injectable therapy algorithm">
+        <div class="caption">
+          Figure. Decision-tree overview. Country selection is the first node; Jordan disables FRC;
+          Turkey shows reimbursement note for BMI &lt; 35 when FRC is recommended.
+        </div>
+      </div>
+
+      <hr class="sep" />
+
+      <h2>Textual description of the algorithm</h2>
+
+      <div class="node">
+        <h3>1) Country selection (first node)</h3>
+        <p>
+          The algorithm first applies a <strong>country profile</strong> (RU, TR, LB, JO, IQ, EU, US, OTHER).
+          This profile may affect availability assumptions and country-specific notes.
+        </p>
+        <ul>
+          <li><strong>Jordan (JO):</strong> FRC (iGlarLixi) is treated as <strong>not available</strong>.</li>
+          <li><strong>Turkey (TR):</strong> if FRC is recommended and BMI &lt; 35, show a comment:
+            “reimbursement often requires BMI ≥35; otherwise may be out-of-pocket” (comment only).
+          </li>
+        </ul>
+      </div>
+
+      <div class="node">
+        <h3>2) Severe hyperglycaemia</h3>
+        <p>
+          <strong>If</strong> catabolic symptoms are present <strong>OR</strong> HbA1c ≥ 10%,
+          recommend <strong>insulin start or urgent insulin intensification</strong>.
+        </p>
+        <p class="caption">
+          Rationale: rapid glycaemic control is prioritised in severe hyperglycaemia/catabolic context to reduce acute risk.
+        </p>
+      </div>
+
+      <div class="node">
+        <h3>3) Simplification / de-intensification (complex insulin regimens)</h3>
+        <p>
+          <strong>If</strong> the patient is on <strong>basal-bolus</strong> or <strong>premix</strong> insulin
+          and has <strong>recurrent hypoglycaemia</strong> or <strong>high regimen complexity/adherence issues</strong>:
+        </p>
+        <ul>
+          <li><strong>If FRC is available</strong> (and not Jordan) → <strong>switch to FRC (iGlarLixi)</strong>.</li>
+          <li><strong>Otherwise</strong> → simplify within insulin options.</li>
+        </ul>
+        <p class="caption">
+          Rationale: de-intensification can be appropriate when hypoglycaemia risk or treatment burden outweighs benefit.
+        </p>
+      </div>
+
+      <div class="node">
+        <h3>4) Intensification on basal insulin</h3>
+        <p><strong>If</strong> the patient is on <strong>basal insulin</strong> and HbA1c remains above target:</p>
+        <ol>
+          <li><strong>If GLP-1 RA is available</strong> → add GLP-1 RA to basal insulin.</li>
+          <li><strong>Else if FRC is available</strong> (and not Jordan) → switch basal insulin to FRC (iGlarLixi).</li>
+          <li><strong>Else</strong> → add prandial insulin (basal-plus strategy, stepwise escalation).</li>
+        </ol>
+        <p class="caption">
+          Rationale: GLP-1 RA is typically preferred before adding mealtime insulin when feasible; FRC provides basal+postprandial control with one injection.
+        </p>
+      </div>
+
+      <div class="node">
+        <h3>5) First injectable selection (no current injectable therapy)</h3>
+
+        <p><strong>A. Cardiorenal disease (ASCVD / HF / CKD):</strong></p>
+        <ul>
+          <li>If GLP-1 RA available → <strong>start GLP-1 RA</strong>.</li>
+          <li>Otherwise → <strong>start basal insulin</strong>.</li>
+        </ul>
+
+        <p><strong>B. Obesity-driven approach (BMI ≥ 30):</strong></p>
+        <ul>
+          <li>If GLP-1 RA available → <strong>start GLP-1 RA</strong>.</li>
+        </ul>
+
+        <p><strong>C. Higher HbA1c without catabolic symptoms:</strong></p>
+        <ul>
+          <li>If HbA1c &gt; 9 and FRC available (not Jordan) → <strong>start FRC (iGlarLixi)</strong>.</li>
+        </ul>
+
+        <p><strong>D. Default rule:</strong></p>
+        <ul>
+          <li>If GLP-1 RA available → <strong>start GLP-1 RA</strong>.</li>
+          <li>Otherwise → <strong>start basal insulin</strong>.</li>
+        </ul>
+      </div>
+
+      <hr class="sep" />
+
+      <h2>Disclaimer</h2>
+      <p class="caption">
+        This tool is a clinical decision-support prototype for internal evaluation. It does not replace clinical judgement,
+        local guidance, institutional policies, or product labels. Always individualise therapy.
+      </p>
     </section>
   </main>
-
-  <script type="module">
-    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
-    mermaid.initialize({ startOnLoad: true, theme: "neutral" });
-  </script>
 </body>
 </html>
