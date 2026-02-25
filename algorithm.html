@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>T2D Injectable Therapy CDS — Algorithm</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .doc h1{margin:0 0 10px 0;font-size:20px}
+    .doc p,.doc li{color:#1a2233}
+    .doc code{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;}
+    .doc .nav{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+    .doc .nav a{font-size:13px;color:#1f3a8a;text-decoration:none;border:1px solid #e6eaf2;background:#fff;padding:8px 10px;border-radius:999px}
+    .doc .nav a:hover{filter:brightness(0.98)}
+    .mermaid{background:#fff;border:1px solid #e6eaf2;border-radius:14px;padding:12px;overflow:auto}
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <div class="brand__title">T2D Injectable Therapy CDS</div>
+        <div class="brand__subtitle">Algorithm description (public page)</div>
+      </div>
+      <div class="badge">Algorithm • v1</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card doc">
+      <div class="nav">
+        <a href="./index.html">Open tool</a>
+        <a href="./algorithm.html">Algorithm</a>
+        <a href="./README.md">README (raw)</a>
+      </div>
+
+      <h1>Clinical logic overview</h1>
+      <p>
+        Country-adaptive injectable therapy decision support for adults with type 2 diabetes:
+        first injectable choice, intensification, and simplification (BB/premix → FRC iGlarLixi).
+      </p>
+
+      <h3>Country rules</h3>
+      <ul>
+        <li><b>Jordan (JO):</b> FRC (iGlarLixi) treated as not available.</li>
+        <li><b>Turkey (TR):</b> if FRC recommended and BMI &lt; 35, show comment: reimbursement often requires BMI ≥35 (comment only).</li>
+      </ul>
+
+      <h3>Decision tree</h3>
+
+      <div class="mermaid">
+flowchart TD
+  A[Start: Select country] --> B{Severe hyperglycaemia?<br/>Catabolic symptoms OR HbA1c ≥10}
+  B -- Yes --> I0[Insulin start / urgent insulin intensification]
+
+  B -- No --> S{On premix or basal-bolus<br/>AND hypoglycaemia/complexity?}
+  S -- Yes --> S1{FRC available?<br/>(and not Jordan)}
+  S1 -- Yes --> SFRC[Simplify: switch to FRC (iGlarLixi)]
+  S1 -- No --> SINS[Simplify within insulin options]
+
+  S -- No --> D{On basal insulin?}
+  D -- Yes --> D2{GLP-1 available?}
+  D2 -- Yes --> DBG[Add GLP-1 RA to basal]
+  D2 -- No --> D3{FRC available?<br/>(and not Jordan)}
+  D3 -- Yes --> DBF[Switch basal -> FRC]
+  D3 -- No --> DBP[Add prandial insulin<br/>(basal-plus -> escalate)]
+
+  D -- No --> E{Cardiorenal risk?<br/>ASCVD / HF / CKD}
+  E -- Yes --> E1{GLP-1 available?}
+  E1 -- Yes --> F1[First injectable: GLP-1 RA]
+  E1 -- No --> F2[First injectable: basal insulin]
+
+  E -- No --> W{BMI ≥ 30?}
+  W -- Yes --> W1{GLP-1 available?}
+  W1 -- Yes --> F1
+  W1 -- No --> H{HbA1c > 9<br/>and FRC available?<br/>(and not Jordan)}
+  W -- No --> H
+
+  H -- Yes --> F3[First injectable: FRC (iGlarLixi)]
+  H -- No --> Z{GLP-1 available?}
+  Z -- Yes --> F1
+  Z -- No --> F2
+      </div>
+
+      <h3>Notes</h3>
+      <ul>
+        <li>This page is for transparency. The executable rules are in <code>py/engine.py</code>.</li>
+        <li>The tool is a prototype and does not replace clinical judgement or local labels.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ startOnLoad: true, theme: "neutral" });
+  </script>
+</body>
+</html>
