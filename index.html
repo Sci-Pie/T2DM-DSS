@@ -3,77 +3,142 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>T2D Injectable Therapy Recommender (Pyodide)</title>
+  <title>T2D Injectable Therapy CDS</title>
+  <link rel="icon" href="data:,">
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
-  <div class="card">
-    <h1>T2D Injectable Therapy Recommender</h1>
-    <p class="muted">
-      Prototype clinical decision support. Not a prescription. Use local guidelines and clinical judgment.
-    </p>
-
-    <div class="grid">
-      <label>Country profile
-        <select id="country">
-          <option value="RU">RU</option>
-          <option value="TR">TR</option>
-          <option value="JO">JO</option>
-          <option value="IQ">IQ</option>
-          <option value="LB">LB</option>
-          <option value="EU">EU</option>
-          <option value="US">US</option>
-          <option value="OTHER">OTHER</option>
-        </select>
-      </label>
-
-      <label>HbA1c (%)
-        <input id="hba1c" type="number" step="0.1" placeholder="e.g., 9.2" value="9.0" />
-      </label>
-
-      <label>BMI
-        <input id="bmi" type="number" step="0.1" placeholder="e.g., 33.1" value="33.0" />
-      </label>
-
-      <label>eGFR (if CKD)
-        <input id="egfr" type="number" step="1" placeholder="e.g., 45" />
-      </label>
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <div class="brand__title">T2D Injectable Therapy CDS</div>
+        <div class="brand__subtitle">Country-adaptive decision support (Pyodide, client-side)</div>
+      </div>
+      <div class="badge">MVP • v1</div>
     </div>
+  </header>
 
-    <div class="grid">
-      <label class="check"><input id="symptoms_catabolic" type="checkbox" /> Symptomatic hyperglycaemia / catabolic features (urgent insulin scenario)</label>
-      <label class="check"><input id="ascvd" type="checkbox" /> Established ASCVD</label>
-      <label class="check"><input id="hf" type="checkbox" /> Heart failure</label>
-      <label class="check"><input id="ckd" type="checkbox" /> Chronic kidney disease</label>
+  <main class="container grid">
+    <section class="card">
+      <h2>Inputs</h2>
 
-      <label class="check"><input id="on_basal_insulin" type="checkbox" /> Already on basal insulin</label>
-      <label class="check"><input id="glp1_available" type="checkbox" checked /> GLP-1 RA available</label>
-      <label class="check"><input id="tirzepatide_available" type="checkbox" /> Dual GIP/GLP-1 available</label>
-      <label class="check"><input id="gi_contra_glp1" type="checkbox" /> GLP-1 intolerance/contraindication</label>
-    </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="country">Country profile</label>
+          <select id="country">
+            <option value="RU">Russia (RU)</option>
+            <option value="TR">Turkey (TR)</option>
+            <option value="LB">Lebanon (LB)</option>
+            <option value="JO">Jordan (JO)</option>
+            <option value="IQ">Iraq (IQ)</option>
+            <option value="EU">EU</option>
+            <option value="US">USA</option>
+            <option value="OTHER">Other</option>
+          </select>
+          <div class="hint" id="country_hint"></div>
+        </div>
 
-    <button id="run">Generate recommendation</button>
+        <div class="field">
+          <label for="hba1c">HbA1c (%)</label>
+          <input id="hba1c" type="number" step="0.1" min="4" max="20" placeholder="e.g., 9.2" />
+        </div>
 
-    <pre id="status" class="muted">Loading Pyodide…</pre>
+        <div class="field">
+          <label for="bmi">BMI (kg/m²)</label>
+          <input id="bmi" type="number" step="0.1" min="10" max="80" placeholder="e.g., 33.5" />
+        </div>
 
-    <div id="result" class="result" hidden>
-      <h2>Output</h2>
-      <div><b>Recommendation:</b> <span id="therapy"></span></div>
+        <div class="field">
+          <label for="egfr">eGFR (ml/min/1.73m²)</label>
+          <input id="egfr" type="number" step="1" min="1" max="200" placeholder="optional" />
+          <div class="hint">Reserved for future renal constraints (optional).</div>
+        </div>
+      </div>
 
-      <div class="spacer"></div>
-      <div><b>Rationale:</b></div>
-      <ul id="why"></ul>
+      <hr class="sep" />
 
-      <div class="spacer"></div>
-      <div><b>Next steps:</b></div>
-      <ul id="next"></ul>
+      <h3>Clinical status</h3>
+      <div class="check-grid">
+        <label class="check"><input id="symptoms_catabolic" type="checkbox" /> Catabolic symptoms / symptomatic hyperglycaemia</label>
+        <label class="check"><input id="ascvd" type="checkbox" /> ASCVD</label>
+        <label class="check"><input id="hf" type="checkbox" /> Heart failure</label>
+        <label class="check"><input id="ckd" type="checkbox" /> CKD</label>
+      </div>
 
-      <div class="spacer"></div>
-      <div><b>Guideline profile used:</b> <span id="profile"></span></div>
-    </div>
-  </div>
+      <hr class="sep" />
 
-  <script src="https://cdn.jsdelivr.net/npm/pyodide@0.25.1/pyodide.js"></script>
+      <h3>Access</h3>
+      <div class="check-grid">
+        <label class="check"><input id="glp1_available" type="checkbox" checked /> Long-acting GLP-1 RA available</label>
+        <label class="check"><input id="gi_contra_glp1" type="checkbox" /> GI contraindication to GLP-1 RA</label>
+        <label class="check"><input id="frc_available" type="checkbox" checked /> FRC (iGlarLixi) available</label>
+      </div>
+      <div class="hint">
+        Note: FRC availability is independent from GLP-1 availability. In Jordan, FRC is treated as not available.
+      </div>
+
+      <hr class="sep" />
+
+      <h3>Current injectable regimen</h3>
+      <div class="radio-grid">
+        <label class="radio"><input type="radio" name="regimen" value="none" checked /> None / first injectable selection</label>
+        <label class="radio"><input type="radio" name="regimen" value="basal" /> Basal insulin</label>
+        <label class="radio"><input type="radio" name="regimen" value="glp1" /> GLP-1 RA</label>
+        <label class="radio"><input type="radio" name="regimen" value="frc" /> FRC (iGlarLixi)</label>
+        <label class="radio"><input type="radio" name="regimen" value="premix" /> Premix insulin</label>
+        <label class="radio"><input type="radio" name="regimen" value="bb" /> Basal-bolus insulin</label>
+      </div>
+
+      <div class="check-grid">
+        <label class="check"><input id="recurrent_hypoglycemia" type="checkbox" /> Recurrent hypoglycaemia</label>
+        <label class="check"><input id="regimen_complexity" type="checkbox" /> Regimen complexity / adherence issues</label>
+      </div>
+
+      <div class="actions">
+        <button id="run" class="btn">Generate recommendation</button>
+        <div id="status" class="status">Not initialized</div>
+      </div>
+    </section>
+
+    <section class="card" id="result" hidden>
+      <h2>Recommendation</h2>
+
+      <div class="kv">
+        <div class="kv__k">Therapy</div>
+        <div class="kv__v" id="therapy"></div>
+      </div>
+      <div class="kv">
+        <div class="kv__k">Country profile</div>
+        <div class="kv__v mono" id="profile"></div>
+      </div>
+
+      <hr class="sep" />
+
+      <h3>Rationale</h3>
+      <ul id="why" class="list"></ul>
+
+      <h3>Next steps</h3>
+      <ul id="next" class="list"></ul>
+
+      <div id="comments_block" hidden>
+        <h3>Notes</h3>
+        <ul id="comments" class="list"></ul>
+      </div>
+
+      <div id="basis_block" hidden>
+        <h3>Guideline basis (tags)</h3>
+        <div id="basis" class="chips"></div>
+      </div>
+
+      <hr class="sep" />
+      <div class="footnote">
+        This is a decision-support prototype. Always apply clinical judgement and local prescribing information.
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
