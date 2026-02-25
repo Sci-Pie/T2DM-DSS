@@ -218,3 +218,27 @@ input[type="number"]:focus, select:focus{
   background:#fbfcff;
   color: #24324a;
 }
+
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.btn-link{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  font-weight:600;
+  color: var(--accent);
+  text-decoration:none;
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:#fff;
+}
+
+.btn-link:hover{
+  filter:brightness(0.98);
+}
