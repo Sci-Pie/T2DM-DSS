@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-v="3">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -51,7 +51,7 @@
                  placeholder="e.g., 7.0" />
           <div class="hint">
             Optional — defaults to 7.0% if not provided.
-            The gap (current HbA1c − target) drives routing.
+            How far HbA1c is above the target determines the injectable strategy.
           </div>
         </div>
 
@@ -61,7 +61,7 @@
                  placeholder="e.g., 33.5" />
         </div>
 
-      </div><!-- /form-grid -->
+      </div>
 
       <hr class="sep" />
 
@@ -89,7 +89,7 @@
 
       <h3>Current injectable regimen</h3>
 
-      <!-- Turkey regimen (visible when TR selected) -->
+      <!-- Turkey regimen — visible by default (TR is default country) -->
       <div id="regimen_tr" class="radio-grid">
         <label class="radio">
           <input type="radio" name="regimen" value="none" checked />
@@ -113,7 +113,7 @@
         </label>
       </div>
 
-      <!-- Iraq regimen (visible when IQ selected) -->
+      <!-- Iraq regimen — hidden until IQ selected -->
       <div id="regimen_iq" class="radio-grid" hidden>
         <label class="radio">
           <input type="radio" name="regimen_iq" value="none" checked />
@@ -184,6 +184,5 @@
 
   <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
   <script src="app.js"></script>
-  <!-- NO inline UI script — app.js owns all UI logic -->
 </body>
 </html>
