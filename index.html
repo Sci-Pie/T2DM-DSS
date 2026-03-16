@@ -17,10 +17,9 @@
           Country-adaptive decision support (Pyodide, client-side)
         </div>
       </div>
-
       <div class="top-actions">
         <a class="btn-link" href="./algorithm.html">Algorithm</a>
-        <div class="badge">MVP • v2</div>
+        <div class="badge">MVP • v3</div>
       </div>
     </div>
   </header>
@@ -30,98 +29,139 @@
       <h2>Inputs</h2>
 
       <div class="form-grid">
+
+        <!-- Country -->
         <div class="field">
           <label for="country">Country profile</label>
           <select id="country">
             <option value="TR">Turkey (TR)</option>
-            <option value="LB">Lebanon (LB)</option>
             <option value="IQ">Iraq (IQ)</option>
           </select>
           <div class="hint" id="country_hint"></div>
         </div>
 
+        <!-- HbA1c -->
         <div class="field">
           <label for="hba1c">HbA1c (%)</label>
-          <input id="hba1c" type="number" step="0.1" min="4" max="20" placeholder="e.g., 9.2" />
+          <input id="hba1c" type="number" step="0.1" min="4" max="20"
+                 placeholder="e.g., 9.2" />
         </div>
 
+        <!-- HbA1c target -->
         <div class="field">
           <label for="hba1c_target">HbA1c target (%)</label>
-          <input id="hba1c_target" type="number" step="0.1" min="4" max="10" placeholder="e.g., 7.0" />
-          <div class="hint">Optional. If not provided, default HbA1c target = 7.0% will be used.</div>
+          <input id="hba1c_target" type="number" step="0.1" min="4" max="10"
+                 placeholder="e.g., 7.0" />
+          <div class="hint">Optional — defaults to 7.0% if not provided.</div>
         </div>
 
+        <!-- BMI -->
         <div class="field">
           <label for="bmi">BMI (kg/m²)</label>
-          <input id="bmi" type="number" step="0.1" min="10" max="80" placeholder="e.g., 33.5" />
+          <input id="bmi" type="number" step="0.1" min="10" max="80"
+                 placeholder="e.g., 33.5" />
         </div>
-      </div>
+
+      </div><!-- /form-grid -->
 
       <hr class="sep" />
 
+      <!-- ── Clinical status ── -->
       <h3>Clinical status</h3>
       <div class="check-grid">
+
         <label class="check">
           <input id="symptoms_catabolic" type="checkbox" />
           Catabolic symptoms / symptomatic hyperglycaemia
         </label>
 
+        <!-- Turkey-only contextual flags (hidden for IQ) -->
         <label class="check" id="ppg_uncontrolled_wrap" hidden>
           <input id="ppg_uncontrolled" type="checkbox" />
-          Postprandial glucose uncontrolled?
+          Postprandial glucose uncontrolled
         </label>
 
+        <!-- Shown for both countries when relevant regimen is selected -->
         <label class="check" id="recurrent_hypoglycemia_wrap" hidden>
           <input id="recurrent_hypoglycemia" type="checkbox" />
           Recurrent hypoglycaemia
         </label>
 
-        <label class="check" id="on_rapid_added_wrap" hidden>
-          <input id="on_rapid_added" type="checkbox" />
-          Rapid-acting insulin already added?
-        </label>
       </div>
 
       <hr class="sep" />
 
+      <!-- ── Current injectable regimen ── -->
       <h3>Current injectable regimen</h3>
-      <div class="radio-grid">
+
+      <!-- Turkey regimen set (shown when TR selected) -->
+      <div id="regimen_tr" class="radio-grid">
         <label class="radio">
           <input type="radio" name="regimen" value="none" checked />
           None / first injectable selection
         </label>
-
         <label class="radio">
           <input type="radio" name="regimen" value="basal" />
           Basal insulin
         </label>
-
         <label class="radio">
           <input type="radio" name="regimen" value="frc" />
           FRC
         </label>
-
         <label class="radio">
           <input type="radio" name="regimen" value="premix" />
           Premix insulin
         </label>
-
         <label class="radio">
           <input type="radio" name="regimen" value="bb" />
           Basal-bolus insulin
         </label>
       </div>
 
-      <div class="hint">
-        Logic is reimbursement-oriented. Standalone GLP-1 RA is not used in the main routing tree and may appear only as an optional note.
+      <!-- Iraq regimen set (shown when IQ selected) -->
+      <div id="regimen_iq" class="radio-grid" hidden>
+        <label class="radio">
+          <input type="radio" name="regimen_iq" value="none" checked />
+          None / first injectable selection
+        </label>
+        <label class="radio">
+          <input type="radio" name="regimen_iq" value="basal_only" />
+          Basal insulin alone
+        </label>
+        <label class="radio">
+          <input type="radio" name="regimen_iq" value="glp1_alone" />
+          GLP-1 RA alone
+        </label>
+        <label class="radio">
+          <input type="radio" name="regimen_iq" value="bi_glp1" />
+          BI + GLP-1 RA (FRC or separately)
+        </label>
+        <label class="radio">
+          <input type="radio" name="regimen_iq" value="bi_glp1_rapid" />
+          BI (max dose) + GLP-1 RA + Rapid-acting insulin
+        </label>
+        <label class="radio">
+          <input type="radio" name="regimen_iq" value="premix" />
+          Premix insulin
+        </label>
+        <label class="radio">
+          <input type="radio" name="regimen_iq" value="bb" />
+          Basal-bolus insulin
+        </label>
+      </div>
+
+      <div class="hint" id="regimen_hint">
+        Iraq logic follows the national injectable algorithm (gap- and BMI-based).
+        Turkey logic is FRC/reimbursement-oriented.
       </div>
 
       <div class="actions">
         <button id="run" class="btn">Generate recommendation</button>
         <div id="status" class="status">Not initialized</div>
       </div>
-    </section>
+    </section><!-- /inputs card -->
 
+    <!-- ── Result card ── -->
     <section class="card" id="result" hidden>
       <h2>Recommendation</h2>
 
@@ -145,12 +185,82 @@
 
       <hr class="sep" />
       <div class="footnote">
-        This is a decision-support prototype. Always apply clinical judgement and local prescribing information.
+        This is a decision-support prototype. Always apply clinical judgement
+        and local prescribing information.
       </div>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
   <script src="app.js"></script>
+
+  <script>
+    // ── UI controller ────────────────────────────────────────────────────────
+    const countryEl   = document.getElementById("country");
+    const regimenTR   = document.getElementById("regimen_tr");
+    const regimenIQ   = document.getElementById("regimen_iq");
+    const regimenHint = document.getElementById("regimen_hint");
+    const ppgWrap     = document.getElementById("ppg_uncontrolled_wrap");
+    const hypoWrap    = document.getElementById("recurrent_hypoglycemia_wrap");
+    const countryHint = document.getElementById("country_hint");
+
+    // Iraq-specific contextual flags shown per regimen selection
+    const IQ_HYPO_REGIMENS = new Set(["premix", "bb"]);
+
+    function applyCountryUI() {
+      const c = countryEl.value;
+
+      // Show/hide regimen sets
+      regimenTR.hidden = (c === "IQ");
+      regimenIQ.hidden = (c !== "IQ");
+
+      // PPG checkbox: Turkey only (relevant for basal insulin on TR)
+      ppgWrap.hidden = (c !== "TR");
+
+      // Country hint
+      if (c === "IQ") {
+        countryHint.textContent =
+          "Iraq algorithm: gap- and BMI-based routing with GLP-1 RA as a primary option.";
+        regimenHint.textContent =
+          "Select the patient's current injectable regimen to route intensification correctly.";
+      } else {
+        countryHint.textContent =
+          "Turkey: FRC-oriented algorithm; reimbursement note added when BMI < 35.";
+        regimenHint.textContent =
+          "Turkey logic is FRC/reimbursement-oriented. "
+          + "Standalone GLP-1 RA appears only as an optional note.";
+      }
+
+      applyRegimenUI();
+    }
+
+    function applyRegimenUI() {
+      const c = countryEl.value;
+      if (c === "IQ") {
+        const sel = document.querySelector('input[name="regimen_iq"]:checked');
+        const val = sel ? sel.value : "none";
+        // Show hypoglycaemia checkbox only for premix / bb regimens
+        hypoWrap.hidden = !IQ_HYPO_REGIMENS.has(val);
+      } else {
+        // Turkey: show hypo for premix / bb
+        const sel = document.querySelector('input[name="regimen"]:checked');
+        const val = sel ? sel.value : "none";
+        hypoWrap.hidden = !(val === "premix" || val === "bb");
+      }
+    }
+
+    // Event listeners
+    countryEl.addEventListener("change", applyCountryUI);
+
+    document.querySelectorAll('input[name="regimen"]').forEach(r =>
+      r.addEventListener("change", applyRegimenUI)
+    );
+    document.querySelectorAll('input[name="regimen_iq"]').forEach(r =>
+      r.addEventListener("change", applyRegimenUI)
+    );
+
+    // Initial render
+    applyCountryUI();
+  </script>
 </body>
 </html>
