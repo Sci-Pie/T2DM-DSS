@@ -33,7 +33,7 @@
         <div class="field">
           <label for="country">Country profile</label>
           <select id="country">
-            <option value="TR">Turkey (TR)</option>
+            <option value="TR" selected>Turkey (TR)</option>
             <option value="IQ">Iraq (IQ)</option>
           </select>
           <div class="hint" id="country_hint"></div>
@@ -73,12 +73,12 @@
           Catabolic symptoms / symptomatic hyperglycaemia
         </label>
 
-        <label class="check" id="ppg_uncontrolled_wrap" hidden>
+        <label class="check" id="ppg_uncontrolled_wrap" style="display:none">
           <input id="ppg_uncontrolled" type="checkbox" />
           Postprandial glucose uncontrolled
         </label>
 
-        <label class="check" id="recurrent_hypoglycemia_wrap" hidden>
+        <label class="check" id="recurrent_hypoglycemia_wrap" style="display:none">
           <input id="recurrent_hypoglycemia" type="checkbox" />
           Recurrent hypoglycaemia
         </label>
@@ -89,8 +89,14 @@
 
       <h3>Current injectable regimen</h3>
 
-      <!-- Turkey regimen — visible by default (TR is default country) -->
-      <div id="regimen_tr" class="radio-grid">
+      <!--
+        TR regimen: visible on load (TR is default country).
+        IQ regimen: hidden on load.
+        Both use style="display:..." enforced at HTML level so no CSS
+        from styles.css can override before app.js runs.
+      -->
+
+      <div id="regimen_tr" class="radio-grid" style="display:block">
         <label class="radio">
           <input type="radio" name="regimen" value="none" checked />
           None / first injectable selection
@@ -113,8 +119,7 @@
         </label>
       </div>
 
-      <!-- Iraq regimen — hidden until IQ selected -->
-      <div id="regimen_iq" class="radio-grid" hidden>
+      <div id="regimen_iq" class="radio-grid" style="display:none">
         <label class="radio">
           <input type="radio" name="regimen_iq" value="none" checked />
           None / first injectable selection
@@ -169,7 +174,7 @@
       <h3>Next steps</h3>
       <ul id="next" class="list"></ul>
 
-      <div id="comments_block" hidden>
+      <div id="comments_block" style="display:none">
         <h3>Notes</h3>
         <ul id="comments" class="list"></ul>
       </div>
